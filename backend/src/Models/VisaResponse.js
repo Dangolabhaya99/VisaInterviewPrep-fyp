@@ -1,11 +1,18 @@
+// models/Response.js
 const mongoose = require("mongoose");
 
-const VisaResponseSchema = new mongoose.Schema({
-  questionId: { type: String, required: true },
-  question: { type: String, required: true },
-  response: { type: String, required: true },
-  tone: { type: String, enum: ["Positive", "Neutral", "Negative"], required: true },
-  createdAt: { type: Date, default: Date.now }
-});
+const responseSchema = new mongoose.Schema(
+  {
+    questionId: { type: String, required: true },
+    question: { type: String, required: true },
+    response: { type: String, required: true },
+    confidenceScore: { type: Number, required: true }, 
+    similarityScore: { type: Number, required: true },
+    points: { type: Number, required: true },
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("VisaResponse", VisaResponseSchema);
+const Response = mongoose.model("Response", responseSchema);
+
+module.exports = Response;

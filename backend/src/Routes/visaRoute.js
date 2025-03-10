@@ -1,9 +1,9 @@
+// routes/responseRoutes.js
 const express = require("express");
-const { saveResponse, getResponses } = require("../Controllers/VisaControllers");
-
 const router = express.Router();
+const { saveResponse } = require("../Controllers/VisaControllers");
 
+// POST request to save response
 router.post("/save-response", saveResponse);
-router.get("/responses", getResponses);
 
 module.exports = router;

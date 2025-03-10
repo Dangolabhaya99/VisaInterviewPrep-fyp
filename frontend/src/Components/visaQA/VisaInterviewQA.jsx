@@ -10,6 +10,9 @@ const VisaInterviewQA = () => {
   const [tones, setTones] = useState({});
   const [isRecording, setIsRecording] = useState(false);
   const [showAnswers, setShowAnswers] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [totalPoints, setTotalPoints] = useState(0);
+  const [feedback, setFeedback] = useState("");
 
   useEffect(() => {
     fetch("/data/visa_questions.json")
@@ -40,21 +43,28 @@ const VisaInterviewQA = () => {
     if (!isResponseRelevant(text, correctAnswer)) {
       setTones((prevTones) => ({
         ...prevTones,
-        [question.id]: { confidence: "N/A", similarity: "Off-topic" },
+        [question.id]: { confidence: "N/A", similarity: "Off-topic", points: 0 },
       }));
       return;
     }
 
     const result = sentimentAnalyzer.analyze(text);
     const confidenceScore = Math.max(0, Math.min(10, ((result.score + 5) / 10) * 10));
+    let points = similarityPercentage >= 90 ? 2 : (similarityPercentage / 100) * 2;
+    points = parseFloat(points.toFixed(2));
 
     setTones((prevTones) => ({
       ...prevTones,
-      [question.id]: { confidence: confidenceScore.toFixed(1), similarity: similarityPercentage },
+      [question.id]: { confidence: confidenceScore.toFixed(1), similarity: similarityPercentage, points },
     }));
 
+    // Save the response to the backend
+    await saveResponse(question, text, confidenceScore, similarityPercentage, points);
+  };
+
+  const saveResponse = async (question, text, confidenceScore, similarityPercentage, points) => {
     try {
-      await fetch("http://localhost:5000/api/save-response", {
+      const response = await fetch("http://localhost:5000/api/save-response", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -63,10 +73,16 @@ const VisaInterviewQA = () => {
           response: text,
           confidenceScore: confidenceScore.toFixed(1),
           similarityScore: similarityPercentage,
+          points: points,
         }),
       });
 
-      console.log("Response saved successfully");
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Error response from server:", errorData);
+      } else {
+        console.log("Response saved successfully");
+      }
     } catch (error) {
       console.error("Error saving response to backend:", error);
     }
@@ -97,6 +113,33 @@ const VisaInterviewQA = () => {
     recognition.start();
   };
 
+  const handleSubmit = () => {
+    let total = Object.values(tones).reduce((sum, item) => sum + (item.points || 0), 0);
+    setTotalPoints(total);
+    setSubmitted(true);
+
+    // Feedback messages
+    const feedbackMessages = [
+      "Excellent! You're well-prepared for your visa interview!",
+      "Good job! Just refine a few answers for more accuracy.",
+      "You're on the right track! Work on clarity and precision.",
+      "Keep practicing! Try to match your responses more closely with the expected answers."
+    ];
+
+    let feedbackMessage = "";
+    if (total >= questions.length * 2 * 0.9) {
+      feedbackMessage = feedbackMessages[0]; // Excellent
+    } else if (total >= questions.length * 2 * 0.7) {
+      feedbackMessage = feedbackMessages[1]; // Good job
+    } else if (total >= questions.length * 2 * 0.5) {
+      feedbackMessage = feedbackMessages[2]; // You're on track
+    } else {
+      feedbackMessage = feedbackMessages[3]; // Keep practicing
+    }
+
+    setFeedback(feedbackMessage);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center p-8">
       <div className="max-w-4xl w-full">
@@ -124,29 +167,27 @@ const VisaInterviewQA = () => {
                       {responses[question.id] && (
                         <>
                           <p className="mt-2 text-gray-900"><strong>Your Response:</strong> {responses[question.id]}</p>
-                          <p className="mt-2 text-gray-700"><strong>Confidence in Tone:</strong> <span className="font-bold text-blue-600">{tones[question.id]?.confidence || "N/A"}</span></p>
-                          <p className="mt-2 text-gray-700"><strong>Answer Accuracy:</strong> 
-                            {tones[question.id]?.similarity === "Off-topic" ? (
-                              <span className="font-bold text-red-600">Off-topic</span>
-                            ) : (
-                              <span className="font-bold text-green-600">{tones[question.id]?.similarity || "N/A"}%</span>
-                            )}
-                          </p>
+
+                          {tones[question.id]?.similarity === "Off-topic" ? (
+                            <p className="mt-2 text-red-600 font-bold">Your response is Off-topic. No points awarded.</p>
+                          ) : (
+                            <>
+                              <p className="mt-2 text-gray-700"><strong>Confidence in Tone:</strong> <span className="font-bold text-blue-600">{tones[question.id]?.confidence || "N/A"} / 10</span></p>
+                              <p className="mt-2 text-gray-700"><strong>Answer Accuracy:</strong> <span className="font-bold text-green-600">{tones[question.id]?.similarity || "N/A"}%</span></p>
+                              <p className="mt-2 text-gray-900 font-bold"><strong>Points Earned:</strong> <span className="text-purple-600">{tones[question.id]?.points || "0"} / 2</span></p>
+                            </>
+                          )}
                         </>
                       )}
 
-                      {/* "See Answer" Button */}
-                      <button onClick={() => toggleAnswer(question.id)}
-                              className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                      <button onClick={() => toggleAnswer(question.id)} className="mt-4 bg-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
                         <EyeIcon className="h-5 w-5" />
                         {showAnswers[question.id] ? "Hide" : "Tips to answer"}
                       </button>
 
-                      {/* Show Correct Answer */}
                       {showAnswers[question.id] && (
                         <p className="mt-2 text-gray-900"><strong>Possible Answers:</strong> {question.answer}</p>
                       )}
-
                     </div>
                   </div>
                 )}
@@ -156,6 +197,17 @@ const VisaInterviewQA = () => {
             <p className="text-center text-gray-500">Loading questions...</p>
           )}
         </div>
+
+        <button onClick={handleSubmit} className="mt-6 bg-green-600 text-white px-6 py-3 rounded-lg w-full font-bold">
+          Submit & Get Score
+        </button>
+
+        {submitted && (
+          <div className="mt-4 p-4 bg-white border rounded-lg shadow">
+            <p className="text-lg font-bold">Total Score: {totalPoints} / {questions.length * 2}</p>
+            <p className="text-gray-700">{feedback}</p>
+          </div>
+        )}
       </div>
     </div>
   );

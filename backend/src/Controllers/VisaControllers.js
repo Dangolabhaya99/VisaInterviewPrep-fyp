@@ -1,30 +1,29 @@
-const VisaResponse = require("../Models/VisaResponse");
+// controllers/responseController.js
+const Response = require("../Models/VisaResponse");
 
-// Store user response
-exports.saveResponse = async (req, res) => {
+const saveResponse = async (req, res) => {
+  const { questionId, question, response, confidenceScore, similarityScore, points } = req.body;
+
   try {
-    const { questionId, question, response, tone } = req.body;
-
-    const newResponse = new VisaResponse({
+    // Create a new response document with the incoming data
+    const newResponse = new Response({
       questionId,
       question,
       response,
-      tone
+      confidenceScore,
+      similarityScore,
+      points,
     });
 
+    // Save the response to the database
     await newResponse.save();
-    res.status(201).json({ message: "Response saved successfully", data: newResponse });
+
+    // Send a success response
+    res.status(201).json({ message: "Response saved successfully", response: newResponse });
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    console.error("Error saving response:", error);
+    res.status(500).json({ error: "Failed to save response", details: error.message });
   }
 };
 
-// Fetch all responses
-exports.getResponses = async (req, res) => {
-  try {
-    const responses = await VisaResponse.find();
-    res.status(200).json(responses);
-  } catch (error) {
-    res.status(500).json({ error: "Server error" });
-  }
-};
+module.exports = { saveResponse };

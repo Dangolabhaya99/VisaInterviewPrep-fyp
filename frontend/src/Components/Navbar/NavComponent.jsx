@@ -9,7 +9,7 @@ import logo from "./BookLogo.jpg";
 const Navbar = () => {
   const dispatch = useDispatch();
   const isOpen = useSelector((state) => state.navbar.isOpen);
-  const authState = useSelector((state) => state.auth); // Authentication state
+  const authState = useSelector((state) => state.auth);
 
   return (
     <nav className="bg-white shadow-lg">
@@ -44,14 +44,22 @@ const Navbar = () => {
             >
               Contact
             </Link>
-            {/* Show "Mock" only if user is authenticated */}
+            {/* Show "Mock" and "Body Language" only if user is authenticated */}
             {authState.isAuthenticated && (
-              <Link
-                to="/qa"
-                className="py-2 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300"
-              >
-                Mock
-              </Link>
+              <>
+                <Link
+                  to="/qa"
+                  className="py-2 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300"
+                >
+                  Mock
+                </Link>
+                <Link
+                  to="/body-language"
+                  className="py-2 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300"
+                >
+                  Body Language
+                </Link>
+              </>
             )}
           </div>
           <div className="hidden md:flex items-center space-x-3">
@@ -131,16 +139,26 @@ const Navbar = () => {
                 Contact
               </Link>
             </li>
-            {/* Show "Mock" only if user is authenticated */}
+            {/* Show "Mock" and "Body Language" only if user is authenticated */}
             {authState.isAuthenticated && (
-              <li>
-                <Link
-                  to="/qa"
-                  className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
-                >
-                  Mock
-                </Link>
-              </li>
+              <>
+                <li>
+                  <Link
+                    to="/qa"
+                    className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
+                  >
+                    Mock
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/body-language"
+                    className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
+                  >
+                    Body Language
+                  </Link>
+                </li>
+              </>
             )}
             {authState.isAuthenticated ? (
               <li>
