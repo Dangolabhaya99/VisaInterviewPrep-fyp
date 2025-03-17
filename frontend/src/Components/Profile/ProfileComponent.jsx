@@ -14,10 +14,12 @@ const ProfilePage = () => {
         bio: '',
         profileImage: '',
     });
+    const [interviewResults, setInterviewResults] = useState([]); // State for interview results
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [file, setFile] = useState(null);
 
+    // Fetch profile data
     const fetchProfile = async () => {
         try {
             const response = await axiosInstance.get('/api/profile/');
@@ -38,8 +40,19 @@ const ProfilePage = () => {
         }
     };
 
+    // Fetch interview results for the user
+    const fetchInterviewResults = async () => {
+        try {
+            const response = await axiosInstance.get('/api/interview/results');
+            setInterviewResults(response.data.results);
+        } catch (err) {
+            toast.error('Failed to load interview results');
+        }
+    };
+
     useEffect(() => {
         fetchProfile();
+        fetchInterviewResults(); // Fetch interview results when component mounts
     }, []);
 
     const handleEditClick = () => {
@@ -72,7 +85,7 @@ const ProfilePage = () => {
                 phone: updatedProfile.user.phone || '',
                 location: updatedProfile.user.address || '',
                 bio: updatedProfile.bio || '',
-                profileImage: updatedProfile.profileImage || profile.profileImage, // Handle fallback if image is not returned
+                profileImage: updatedProfile.profileImage || profile.profileImage,
             });
 
             setIsEditing(false);
@@ -113,9 +126,7 @@ const ProfilePage = () => {
     }
 
     return (
-        <div
-            className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-200 flex flex-col items-center py-12"
-        >
+        <div className="min-h-screen bg-gradient-to-r from-blue-100 to-purple-200 flex flex-col items-center py-12">
             <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-3xl">
                 <div className="flex flex-col items-center">
                     <div className="relative">
@@ -229,6 +240,24 @@ const ProfilePage = () => {
                             Cancel
                         </button>
                     </div>
+                )}
+            </div>
+
+            {/* Interview History Section */}
+            <div className="mt-10 w-full max-w-3xl bg-white shadow-lg rounded-lg p-8">
+                <h2 className="text-xl font-semibold mb-4">Interview Prep Attempts</h2>
+                {interviewResults.length > 0 ? (
+                    <ul>
+                        {interviewResults.map((result, index) => (
+                            <li key={index} className="mb-4 border-b pb-4">
+                                <p><strong>Total Points:</strong> {result.totalPoints}</p>
+                                <p><strong>Feedback:</strong> {result.feedback}</p>
+                                <p><strong>Date:</strong> {new Date(result.createdAt).toLocaleDateString()}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>No interview attempts found.</p>
                 )}
             </div>
 

@@ -113,32 +113,52 @@ const VisaInterviewQA = () => {
     recognition.start();
   };
 
-  const handleSubmit = () => {
-    let total = Object.values(tones).reduce((sum, item) => sum + (item.points || 0), 0);
-    setTotalPoints(total);
-    setSubmitted(true);
+ const handleSubmit = async () => {
+  let total = Object.values(tones).reduce((sum, item) => sum + (item.points || 0), 0);
+  setTotalPoints(total);
+  setSubmitted(true);
 
-    // Feedback messages
-    const feedbackMessages = [
-      "Excellent! You're well-prepared for your visa interview!",
-      "Good job! Just refine a few answers for more accuracy.",
-      "You're on the right track! Work on clarity and precision.",
-      "Keep practicing! Try to match your responses more closely with the expected answers."
-    ];
+  const feedbackMessages = [
+    "Excellent! You're well-prepared for your visa interview!",
+    "Good job! Just refine a few answers for more accuracy.",
+    "You're on the right track! Work on clarity and precision.",
+    "Keep practicing! Try to match your responses more closely with the expected answers."
+  ];
 
-    let feedbackMessage = "";
-    if (total >= questions.length * 2 * 0.9) {
-      feedbackMessage = feedbackMessages[0]; // Excellent
-    } else if (total >= questions.length * 2 * 0.7) {
-      feedbackMessage = feedbackMessages[1]; // Good job
-    } else if (total >= questions.length * 2 * 0.5) {
-      feedbackMessage = feedbackMessages[2]; // You're on track
+  let feedbackMessage = "";
+  if (total >= questions.length * 2 * 0.9) {
+    feedbackMessage = feedbackMessages[0];
+  } else if (total >= questions.length * 2 * 0.7) {
+    feedbackMessage = feedbackMessages[1];
+  } else if (total >= questions.length * 2 * 0.5) {
+    feedbackMessage = feedbackMessages[2];
+  } else {
+    feedbackMessage = feedbackMessages[3];
+  }
+
+  setFeedback(feedbackMessage);
+
+  try {
+    const response = await fetch("http://localhost:5000/api/interview/save-result", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        totalPoints: total,
+        feedback: feedbackMessage,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to save interview result:", errorData);
     } else {
-      feedbackMessage = feedbackMessages[3]; // Keep practicing
+      console.log("Interview result saved successfully");
     }
+  } catch (error) {
+    console.error("Error saving interview result:", error);
+  }
+};
 
-    setFeedback(feedbackMessage);
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center p-8">

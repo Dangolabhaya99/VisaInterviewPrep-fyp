@@ -5,7 +5,7 @@ import "@tensorflow/tfjs";
 const BodyLanguageAnalyzer = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const recordingRef = useRef(false); // Use ref to ensure correct recording state in setInterval
+  const recordingRef = useRef(false);
   const [feedback, setFeedback] = useState("Press record to analyze posture.");
   const [poseData, setPoseData] = useState([]);
 
@@ -22,8 +22,8 @@ const BodyLanguageAnalyzer = () => {
 
   const startRecording = async () => {
     setFeedback("Recording posture...");
-    recordingRef.current = true; // Update ref
-    setPoseData([]); // Reset pose data
+    recordingRef.current = true; 
+    setPoseData([]); 
     analyzePose();
   };
 

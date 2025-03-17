@@ -13,6 +13,8 @@ const authRoute=require("./src/Routes/AuthRoute");
 const profileRoutes = require("./src/Routes/profileRoute");
 const userProfileRoutes = require("./src/Routes/userProfleRoute");
 const visaRoute = require("./src/Routes/visaRoute");
+const InterviewResultRoutes = require('./src/Routes/ResultRoute');
+
 
 app.use('/api/auth',authRoute)
 
@@ -23,6 +25,8 @@ app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use('/api/profile', profileRoutes);
 
 app.use("/api", visaRoute );
+
+app.use('/api/interview', InterviewResultRoutes);
 
 app.listen(port, ()=>{
     console.log(`server is runnigng on ${port}`);
