@@ -4,7 +4,9 @@ import Sentiment from "sentiment";
 import stringSimilarity from "string-similarity";
 
 const VisaInterviewQA = () => {
+  const [allQuestions, setAllQuestions] = useState([]);
   const [questions, setQuestions] = useState([]);
+  const [currentSet, setCurrentSet] = useState(0);
   const [activeIndex, setActiveIndex] = useState(null);
   const [responses, setResponses] = useState({});
   const [tones, setTones] = useState({});
@@ -17,12 +19,30 @@ const VisaInterviewQA = () => {
   useEffect(() => {
     fetch("/data/visa_questions.json")
       .then((response) => response.json())
-      .then((data) => setQuestions(data))
+      .then((data) => {
+        setAllQuestions(data);
+        setQuestions(data.slice(0, Math.ceil(data.length / 3)));
+      })
       .catch((error) => console.error("Error loading questions:", error));
   }, []);
 
   const toggleAnswer = (id) => {
     setShowAnswers((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const loadNextSet = () => {
+    const nextSet = currentSet + 1;
+    const setSize = Math.ceil(allQuestions.length / 3);
+
+    if (nextSet < 3) {
+      setQuestions(allQuestions.slice(nextSet * setSize, (nextSet + 1) * setSize));
+      setCurrentSet(nextSet);
+      setResponses({});
+      setTones({});
+      setSubmitted(false);
+      setTotalPoints(0);
+      setFeedback("");
+    }
   };
 
   const sentimentAnalyzer = new Sentiment();
@@ -137,11 +157,10 @@ const VisaInterviewQA = () => {
     }
   
     setFeedback(feedbackMessage);
-  
+    
     try {
       // Get user ID from state or authentication token
       const userId = localStorage.getItem("userId");
-      console.log("User ID:", userId); // Check if this is being logged correctly
   
       if (!userId) {
         console.error("User ID not found");
@@ -152,7 +171,7 @@ const VisaInterviewQA = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId, // Include user ID in the request body
+          userId,
           totalPoints: total,
           feedback: feedbackMessage,
         }),
@@ -168,8 +187,6 @@ const VisaInterviewQA = () => {
       console.error("Error saving interview result:", error);
     }
   };
-  
-  
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center p-8">
@@ -237,6 +254,11 @@ const VisaInterviewQA = () => {
           <div className="mt-4 p-4 bg-white border rounded-lg shadow">
             <p className="text-lg font-bold">Total Score: {totalPoints} / {questions.length * 2}</p>
             <p className="text-gray-700">{feedback}</p>
+            {currentSet < 2 && (
+              <button onClick={loadNextSet} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg">
+                Attempt Next Set
+              </button>
+            )}
           </div>
         )}
       </div>

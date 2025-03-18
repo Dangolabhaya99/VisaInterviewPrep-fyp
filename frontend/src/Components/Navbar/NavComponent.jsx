@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../features/auth/authSlice";
 import { toggle } from "../../features/navbar/navbarSlice";
@@ -8,8 +8,14 @@ import logo from "./BookLogo.jpg";
 
 const Navbar = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const isOpen = useSelector((state) => state.navbar.isOpen);
   const authState = useSelector((state) => state.auth);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    navigate("/"); 
+  };
 
   return (
     <nav className="bg-white shadow-lg">
@@ -44,7 +50,6 @@ const Navbar = () => {
             >
               Contact
             </Link>
-            {/* Show "Mock" and "Body Language" only if user is authenticated */}
             {authState.isAuthenticated && (
               <>
                 <Link
@@ -52,12 +57,6 @@ const Navbar = () => {
                   className="py-2 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300"
                 >
                   Mock
-                </Link>
-                <Link
-                  to="/body-language"
-                  className="py-2 px-2 text-gray-500 font-semibold hover:text-blue-500 transition duration-300"
-                >
-                  Body Language
                 </Link>
               </>
             )}
@@ -69,8 +68,8 @@ const Navbar = () => {
                   <img src={profile} alt="Profile" className="h-6" />
                 </Link>
                 <button
-                  onClick={() => dispatch(logout())}
-                  className="py-1 px-2 font-medium text-gray-500 rounded hover:bg-gray-200 transition duration-300"
+                  onClick={handleLogout} 
+                  className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
                 >
                   Log Out
                 </button>
@@ -139,7 +138,6 @@ const Navbar = () => {
                 Contact
               </Link>
             </li>
-            {/* Show "Mock" and "Body Language" only if user is authenticated */}
             {authState.isAuthenticated && (
               <>
                 <li>
@@ -150,20 +148,12 @@ const Navbar = () => {
                     Mock
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/body-language"
-                    className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
-                  >
-                    Body Language
-                  </Link>
-                </li>
               </>
             )}
             {authState.isAuthenticated ? (
               <li>
                 <button
-                  onClick={() => dispatch(logout())}
+                  onClick={handleLogout} 
                   className="block text-sm px-2 py-4 hover:bg-blue-500 transition duration-300"
                 >
                   Log Out

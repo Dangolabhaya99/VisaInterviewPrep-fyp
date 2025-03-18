@@ -9,7 +9,6 @@ import AboutComponent from './Components/About/AboutComponent';
 import ContactComponent from './Components/Contact/ContactComponent';
 import ProfilePage from './Components/Profile/ProfileComponent';
 import VisaInterviewQA from './Components/visaQA/VisaInterviewQA';
-import BodyLanguageAnalyzer from './Components/video/bodylanguageanalyze';
 
 const App = () => {
   return (
@@ -21,7 +20,6 @@ const App = () => {
     <Route path='/about' element={<AboutComponent/>}/>
     <Route path='/contact' element={<ContactComponent/>}/>
     <Route path='/qa' element={<VisaInterviewQA/>}/>
-    <Route path='/body-language' element={<BodyLanguageAnalyzer/>}/>
     <Route path='/profile' element={<ProfilePage/>}/>
     <Route path='/login' element={<LoginComponent/>}/>
     <Route path='/signup' element={<SignUpCompoenet/>}/>
