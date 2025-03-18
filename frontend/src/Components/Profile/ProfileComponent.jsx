@@ -25,6 +25,7 @@ const ProfilePage = () => {
             const response = await axiosInstance.get('/api/profile/');
             const profileData = response.data.profile;
             setProfile({
+                // userId: profileData.user._id, // ✅ Store user ID
                 name: profileData.user.name,
                 email: profileData.user.email,
                 phone: profileData.user.phone || '',
@@ -39,16 +40,21 @@ const ProfilePage = () => {
             toast.error(err.response?.data?.msg || 'Failed to load profile');
         }
     };
+    
 
     // Fetch interview results for the user
     const fetchInterviewResults = async () => {
         try {
             const response = await axiosInstance.get('/api/interview/results');
+            console.log(response.data); // Log the response for debugging
             setInterviewResults(response.data.results);
         } catch (err) {
-            toast.error('Failed to load interview results');
+            console.error(err);
+            toast.error(err.response?.data?.msg || 'Failed to load interview results');
         }
     };
+    
+    
 
     useEffect(() => {
         fetchProfile();
@@ -245,7 +251,7 @@ const ProfilePage = () => {
 
             {/* Interview History Section */}
             <div className="mt-10 w-full max-w-3xl bg-white shadow-lg rounded-lg p-8">
-                <h2 className="text-xl font-semibold mb-4">Interview Prep Attempts</h2>
+                <h2 className="text-xl font-semibold mb-4">Interview Questions Attempts</h2>
                 {interviewResults.length > 0 ? (
                     <ul>
                         {interviewResults.map((result, index) => (

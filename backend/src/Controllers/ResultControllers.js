@@ -2,23 +2,21 @@ const InterviewResult = require('../Models/VisaInterviewResult');
 
 const saveInterviewResult = async (req, res) => {
   try {
-    const { totalPoints, feedback } = req.body;
+    const { userId, totalPoints, feedback } = req.body;
 
-    if (totalPoints === undefined || !feedback) {
-      return res.status(400).json({ error: 'All fields are required' });
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' }); // Fixing the check from 'user' to 'userId'
     }
 
-    const result = new InterviewResult({
+    const newResult = new InterviewResult({
+      user: userId, // Assuming 'user' is the reference field in your schema
       totalPoints,
       feedback,
     });
 
-    await result.save();
+    await newResult.save();
 
-    res.status(201).json({
-      message: 'Interview result saved successfully',
-      data: result,
-    });
+    res.status(201).json({ message: 'Interview result saved successfully', result: newResult });
   } catch (error) {
     console.error('Error saving interview result:', error);
     res.status(500).json({ error: 'Failed to save interview result' });
@@ -27,15 +25,18 @@ const saveInterviewResult = async (req, res) => {
 
 const fetchInterviewResults = async (req, res) => {
   try {
-    const results = await InterviewResult.find({ user: req.userId }) // Fetch results for the logged-in user
-      .populate('user', 'name email'); // Optionally populate user details
+    const userId = req.user.id; // Accessing user ID from the decoded token
+    if (!userId) {
+      return res.status(400).json({ msg: 'User ID is required' });
+    }
+
+    const results = await InterviewResult.find({ user: userId }).populate('user', 'name email');
     res.json({ results });
-  } catch (error) {
-    console.error('Error fetching interview results:', error);
-    res.status(500).json({ error: 'Failed to fetch interview results' });
+  } catch (err) {
+    console.error('Error fetching interview results:', err);
+    res.status(500).json({ msg: 'Failed to load interview results' });
   }
 };
 
 
-
-module.exports = { saveInterviewResult,fetchInterviewResults };
+module.exports = { saveInterviewResult, fetchInterviewResults };

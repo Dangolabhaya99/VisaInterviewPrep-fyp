@@ -1,16 +1,19 @@
 const mongoose = require('mongoose');
 
-const interviewResultSchema = new mongoose.Schema({
-  totalPoints: { 
-    type: Number, 
-    required: true 
+const VisaInterviewResultSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
   },
-  feedback: { 
-    type: String, 
-    required: true 
+  totalPoints: {
+    type: Number,
+    required: true,
+  },
+  feedback: {
+    type: String,
+    required: true,
   },
 }, { timestamps: true });
 
-const InterviewResult = mongoose.model('InterviewResult', interviewResultSchema);
-
-module.exports = InterviewResult;
+module.exports = mongoose.model('VisaInterviewResult', VisaInterviewResultSchema);

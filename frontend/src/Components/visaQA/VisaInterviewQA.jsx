@@ -113,52 +113,63 @@ const VisaInterviewQA = () => {
     recognition.start();
   };
 
- const handleSubmit = async () => {
-  let total = Object.values(tones).reduce((sum, item) => sum + (item.points || 0), 0);
-  setTotalPoints(total);
-  setSubmitted(true);
-
-  const feedbackMessages = [
-    "Excellent! You're well-prepared for your visa interview!",
-    "Good job! Just refine a few answers for more accuracy.",
-    "You're on the right track! Work on clarity and precision.",
-    "Keep practicing! Try to match your responses more closely with the expected answers."
-  ];
-
-  let feedbackMessage = "";
-  if (total >= questions.length * 2 * 0.9) {
-    feedbackMessage = feedbackMessages[0];
-  } else if (total >= questions.length * 2 * 0.7) {
-    feedbackMessage = feedbackMessages[1];
-  } else if (total >= questions.length * 2 * 0.5) {
-    feedbackMessage = feedbackMessages[2];
-  } else {
-    feedbackMessage = feedbackMessages[3];
-  }
-
-  setFeedback(feedbackMessage);
-
-  try {
-    const response = await fetch("http://localhost:5000/api/interview/save-result", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        totalPoints: total,
-        feedback: feedbackMessage,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Failed to save interview result:", errorData);
+  const handleSubmit = async () => {
+    let total = Object.values(tones).reduce((sum, item) => sum + (item.points || 0), 0);
+    setTotalPoints(total);
+    setSubmitted(true);
+  
+    const feedbackMessages = [
+      "Excellent! You're well-prepared for your visa interview!",
+      "Good job! Just refine a few answers for more accuracy.",
+      "You're on the right track! Work on clarity and precision.",
+      "Keep practicing! Try to match your responses more closely with the expected answers."
+    ];
+  
+    let feedbackMessage = "";
+    if (total >= questions.length * 2 * 0.9) {
+      feedbackMessage = feedbackMessages[0];
+    } else if (total >= questions.length * 2 * 0.7) {
+      feedbackMessage = feedbackMessages[1];
+    } else if (total >= questions.length * 2 * 0.5) {
+      feedbackMessage = feedbackMessages[2];
     } else {
-      console.log("Interview result saved successfully");
+      feedbackMessage = feedbackMessages[3];
     }
-  } catch (error) {
-    console.error("Error saving interview result:", error);
-  }
-};
-
+  
+    setFeedback(feedbackMessage);
+  
+    try {
+      // Get user ID from state or authentication token
+      const userId = localStorage.getItem("userId");
+      console.log("User ID:", userId); // Check if this is being logged correctly
+  
+      if (!userId) {
+        console.error("User ID not found");
+        return;
+      }
+  
+      const response = await fetch("http://localhost:5000/api/interview/save-result", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId, // Include user ID in the request body
+          totalPoints: total,
+          feedback: feedbackMessage,
+        }),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to save interview result:", errorData);
+      } else {
+        console.log("Interview result saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving interview result:", error);
+    }
+  };
+  
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center p-8">

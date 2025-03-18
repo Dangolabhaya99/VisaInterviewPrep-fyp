@@ -49,9 +49,10 @@ const LoginComponent = () => {
         const { token,user} = response.data;
         localStorage.setItem("token", token);
         localStorage.setItem("userRole", user.role);
+        localStorage.setItem("userId", user._id);
         // console.log(response.data.token);
         // Dispatch the login action with the role
-        dispatch(login({ token, role: user.role }));
+        dispatch(login({ token, role: user.role, userId: user._id }));
         Navigate('/')
 
         // show success message
